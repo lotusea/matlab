@@ -1,0 +1,35 @@
+% This file is to extra mean value of a masked image from every subject.
+
+subdir    = '/data/1/data/Dyslexia/subjects/';
+scriptdir = '/data/1/data/Dyslexia/scripts/';
+
+subid = {'101014cm', '101018cd', '101027ds', ...
+          '101028cw', '101109kp'}
+          
+cd(subdir);
+
+
+Vals = NaN(length(subid), 1);
+
+masklist = 'mask.img'
+M = spm_vol(mask)
+mask = spm_read_vols(M)
+
+for isub = 1 : length(subid)
+  cd(fullfile(subdir, subid{isub}, 'model/pugh'));
+  load('SPM.mat');
+  
+  V = spm_vol('con_0001.img');
+  % To extract the mean signal from an ROI using a mask
+  v = spm_read_vols(V);
+  con_values = nanmean(v(mask));
+  
+  % To replace NaN with zeroes
+  v(isnan(v)) = 0;
+  
+  % To get the mean signal value in a sphere centered at specific coordiate
+  voi_idx = jp_get_voi_idx(SPM, [0, 0, 0], 5);
+  con_values = spm_sample_vol(V, voi_idx(1,:)', voi_idx(2,:)', voi_idx(3,:)', 0);
+  Vals(isub) = nanmean(con_values);
+  
+  
